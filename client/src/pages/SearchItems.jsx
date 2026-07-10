@@ -1,6 +1,7 @@
 import { Search, Sparkles } from "lucide-react"
-
+import { useNavigate } from "react-router-dom"
 function SearchItems() {
+    const navigate = useNavigate()
   return (
     <div className="min-h-screen bg-slate-950 text-white px-6 py-10">
 
@@ -37,7 +38,9 @@ function SearchItems() {
           />
 
 
-          <button className="mt-5 flex items-center justify-center gap-2 w-full bg-cyan-400 text-black py-3 rounded-xl font-bold hover:scale-105 transition">
+          <button 
+          onClick={() => navigate("/matches")}
+          className="mt-5 flex items-center justify-center gap-2 w-full bg-cyan-400 text-black py-3 rounded-xl font-bold hover:scale-105 transition">
 
             <Search size={20}/>
 

@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard"
 import ReportLost from "./pages/ReportLost"
 import ReportFound from "./pages/ReportFound"
 import SearchItems from "./pages/SearchItems"
+import Matches from "./pages/Matches"
 function App() {
   return (
     <BrowserRouter>
@@ -22,7 +23,7 @@ function App() {
         <Route path="/report-lost" element={<ReportLost />} /> 
         <Route path="/report-found" element={<ReportFound />} />
         <Route path="/search" element={<SearchItems />} />
-
+<Route path="/matches" element={<Matches />} />
       </Routes>
 
     </BrowserRouter>
