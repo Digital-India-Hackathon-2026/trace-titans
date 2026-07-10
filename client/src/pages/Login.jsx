@@ -26,7 +26,11 @@ function Login() {
       login(res.data.user, res.data.token)
       navigate("/dashboard")
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed. Check your credentials.")
+      if (err.message === "Network Error") {
+        setError("Cannot connect to the backend server. Please verify that your backend server is running on port 5000.")
+      } else {
+        setError(err.response?.data?.message || "Login failed. Check your credentials.")
+      }
     } finally {
       setLoading(false)
     }

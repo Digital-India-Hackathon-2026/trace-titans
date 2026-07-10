@@ -24,7 +24,11 @@ function Register() {
       await API.post("/register", { name, email, password })
       navigate("/login")
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed. Try again.")
+      if (err.message === "Network Error") {
+        setError("Cannot connect to the backend server. Please verify that your backend server is running on port 5000.")
+      } else {
+        setError(err.response?.data?.message || "Registration failed. Try again.")
+      }
     } finally {
       setLoading(false)
     }
