@@ -1,6 +1,7 @@
+
 function Home() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-500 text-white">
+    <div className="min-h-screen bg-slate-950 text-white">
       
       <section className="flex flex-col items-center justify-center text-center px-6 py-24">
         <h1 className="text-5xl font-bold mb-6">
@@ -27,7 +28,7 @@ function Home() {
 
       <section className="grid md:grid-cols-3 gap-6 px-10 pb-20">
 
-        <div className="bg-white/20 backdrop-blur-lg p-6 rounded-2xl">
+        <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-6 rounded-2xl">
           <h2 className="text-xl font-bold mb-3">
             🤖 AI Matching
           </h2>
@@ -37,7 +38,7 @@ function Home() {
         </div>
 
 
-        <div className="bg-white/20 backdrop-blur-lg p-6 rounded-2xl">
+        <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-6 rounded-2xl">
           <h2 className="text-xl font-bold mb-3">
             📍 Location Tracking
           </h2>
@@ -47,7 +48,7 @@ function Home() {
         </div>
 
 
-        <div className="bg-white/20 backdrop-blur-lg p-6 rounded-2xl">
+        <div className="bg-white/10 backdrop-blur-xl border border-white/10 p-6 rounded-2xl">
           <h2 className="text-xl font-bold mb-3">
             🔒 Secure Recovery
           </h2>
