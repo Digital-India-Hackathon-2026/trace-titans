@@ -1,19 +1,15 @@
+import { useContext } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { Search, LogIn, Home, FilePlus, PackageSearch, LogOut } from "lucide-react"
+import { AuthContext } from "../context/AuthContext"
 
 function Navbar() {
-
   const navigate = useNavigate()
+  const { isLoggedIn, logout } = useContext(AuthContext)
 
-  const isLoggedIn = localStorage.getItem("isLoggedIn")
-
-
-  function logout() {
-
-    localStorage.removeItem("isLoggedIn")
-
+  function handleLogout() {
+    logout()
     navigate("/login")
-
   }
 
 
@@ -65,7 +61,7 @@ function Navbar() {
 
 
             <button
-              onClick={logout}
+              onClick={handleLogout}
               className="flex items-center gap-2 bg-red-500 px-4 py-2 rounded-xl"
             >
               <LogOut size={18}/>

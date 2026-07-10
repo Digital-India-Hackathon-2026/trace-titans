@@ -1,74 +1,172 @@
-function Matches() {
+import { useState, useEffect } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
+import { AlertTriangle, ArrowLeft, Loader2, Check } from "lucide-react"
+import API from "../services/api"
 
-  const matches = [
-    {
-      name: "Black Smartphone",
-      location: "College Library",
-      score: 94
-    },
-    {
-      name: "Leather Wallet",
-      location: "Cafeteria",
-      score: 87
+function Matches() {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [matches, setMatches] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [claimed, setClaimed] = useState({})
+
+  const { queryText, status } = location.state || {}
+
+  useEffect(() => {
+    if (!queryText) {
+      setError("No search parameters provided. Please start from the search page.")
+      setLoading(false)
+      return
     }
-  ]
+
+    const fetchMatches = async () => {
+      try {
+        const res = await API.post("/items/search-matches", { queryText, status })
+        setMatches(res.data)
+      } catch (err) {
+        console.error("Match error:", err)
+        setError("Failed to fetch matching reports from the server.")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchMatches()
+  }, [queryText, status])
+
+  const handleContact = (index) => {
+    setClaimed(prev => ({
+      ...prev,
+      [index]: true
+    }))
+  }
+
+  const getItemEmoji = (category, title) => {
+    const text = `${category} ${title}`.toLowerCase()
+    if (text.includes("bag") || text.includes("backpack")) return "🎒"
+    if (text.includes("phone") || text.includes("mobile")) return "📱"
+    if (text.includes("card") || text.includes("id") || text.includes("aadhaar") || text.includes("license")) return "🪪"
+    if (text.includes("wallet") || text.includes("purse")) return "👛"
+    if (text.includes("key")) return "🔑"
+    if (text.includes("laptop") || text.includes("macbook")) return "💻"
+    if (text.includes("watch")) return "⌚"
+    return "📦"
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-white px-8 py-10">
+      <button 
+        onClick={() => navigate("/search")}
+        className="flex items-center gap-2 text-cyan-400 hover:text-cyan-300 mb-6 transition"
+      >
+        <ArrowLeft size={20} />
+        Back to Search
+      </button>
 
       <h1 className="text-4xl font-bold mb-3">
         🤖 AI Match Results
       </h1>
 
-      <p className="text-lg mb-10">
+      <p className="text-lg mb-10 text-gray-300">
         AI analyzed lost and found reports to find possible matches.
       </p>
 
+      {queryText && (
+        <div className="bg-white/5 border border-white/10 p-5 rounded-2xl mb-8">
+          <span className="text-sm text-cyan-400 font-bold uppercase tracking-wider">Search Description:</span>
+          <p className="mt-2 text-gray-200 italic">"{queryText}"</p>
+          <div className="mt-3 text-xs text-gray-400">
+            Searching for: <span className="font-bold text-gray-200">{status === "Lost" ? "FOUND reports" : "LOST reports"}</span>
+          </div>
+        </div>
+      )}
 
       <div className="bg-white/10 backdrop-blur-xl border border-white/10 rounded-2xl p-6">
-
         <h2 className="text-2xl font-bold mb-5">
           Possible Matches Found
         </h2>
 
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-3">
+            <Loader2 className="animate-spin text-cyan-400" size={40} />
+            <span className="text-gray-400">Analyzing reports...</span>
+          </div>
+        ) : error ? (
+          <div className="flex flex-col items-center justify-center py-12 gap-3 text-center">
+            <AlertTriangle className="text-red-400" size={40} />
+            <span className="text-red-300">{error}</span>
+          </div>
+        ) : matches.length === 0 ? (
+          <div className="text-center py-12 text-gray-400">
+            No matching items found in the database.
+          </div>
+        ) : (
+          <div className="space-y-5">
+            {matches.map((match, index) => {
+              const item = match
+              const score = match.score
+              return (
+                <div
+                  key={index}
+                  className="bg-white/10 rounded-xl p-5 border border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6"
+                >
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold flex items-center gap-2">
+                      {getItemEmoji(item.category, item.title)} {item.title}
+                    </h3>
+                    <p className="mt-2 text-gray-300 text-sm">
+                      {item.description}
+                    </p>
+                    <p className="mt-2 text-gray-400 text-sm">
+                      📍 Location: <span className="text-gray-200">{item.location}</span>
+                    </p>
+                    <p className="text-gray-400 text-sm">
+                      📅 Date: <span className="text-gray-200">{new Date(item.date).toLocaleDateString()}</span>
+                    </p>
 
-        <div className="space-y-5">
+                    <div className="mt-4 max-w-md">
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-gray-400">Match Confidence:</span>
+                        <span className="text-cyan-400 font-bold">{score}% Match</span>
+                      </div>
+                      <div className="w-full bg-gray-700 rounded-full h-2">
+                        <div 
+                          className="bg-cyan-400 h-2 rounded-full transition-all duration-500"
+                          style={{ width: `${score}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
 
-          {matches.map((item, index) => (
+                  {item.image && (
+                    <div className="w-24 h-24 border border-white/15 rounded-lg overflow-hidden shrink-0">
+                      <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                    </div>
+                  )}
 
-            <div
-              key={index}
-              className="bg-white/10 rounded-xl p-5"
-            >
-
-              <h3 className="text-xl font-bold">
-                📦 {item.name}
-              </h3>
-
-              <p className="mt-2">
-                📍 Location: {item.location}
-              </p>
-
-              <p className="mt-2">
-                ⭐ AI Match Score:
-                <span className="font-bold">
-                  {" "}{item.score}%
-                </span>
-              </p>
-
-
-              <button className="mt-4 bg-white text-black px-5 py-2 rounded-lg hover:scale-105 transition">
-                Contact Finder
-              </button>
-
-            </div>
-
-          ))}
-
-        </div>
-
+                  <div className="shrink-0">
+                    <button 
+                      onClick={() => handleContact(index)}
+                      className={`px-5 py-2.5 rounded-lg font-bold transition flex items-center gap-2 ${claimed[index] ? 'bg-green-500 text-white' : 'bg-white text-black hover:scale-105'}`}
+                      disabled={claimed[index]}
+                    >
+                      {claimed[index] ? (
+                        <>
+                          <Check size={18} />
+                          Claim Initiated
+                        </>
+                      ) : (
+                        "Contact Finder"
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
-
     </div>
   )
 }
