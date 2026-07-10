@@ -10,6 +10,7 @@ function Dashboard() {
   const { user } = useContext(AuthContext)
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
+  const [dbStatus, setDbStatus] = useState(null)
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -22,7 +23,16 @@ function Dashboard() {
         setLoading(false)
       }
     }
+    const fetchDbStatus = async () => {
+      try {
+        const res = await API.get("/db-status")
+        setDbStatus(res.data)
+      } catch (err) {
+        console.error("Failed to fetch DB status:", err)
+      }
+    }
     fetchItems()
+    fetchDbStatus()
   }, [])
 
   const getItemEmoji = (category, title) => {
@@ -39,13 +49,27 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white px-8 py-10">
-      <h1 className="text-4xl font-bold mb-3">
-        Welcome Back, {user?.name || "User"} 👋
-      </h1>
-
-      <p className="mb-10 text-lg">
-        Manage your lost and found items easily with AI assistance.
-      </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+        <div>
+          <h1 className="text-4xl font-bold mb-3">
+            Welcome Back, {user?.name || "User"} 👋
+          </h1>
+          <p className="text-lg text-gray-300">
+            Manage your lost and found items easily with AI assistance.
+          </p>
+        </div>
+        
+        {dbStatus && (
+          <div className={`px-4 py-2.5 rounded-2xl border flex items-center gap-2 text-sm font-semibold shadow-lg backdrop-blur-md transition-all ${
+            dbStatus.useInMemoryDB 
+              ? "bg-amber-500/10 border-amber-500/30 text-amber-400" 
+              : "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+          }`}>
+            <span className={`w-2.5 h-2.5 rounded-full ${dbStatus.useInMemoryDB ? "bg-amber-400 animate-pulse" : "bg-emerald-400"}`} />
+            Database Mode: <span className="font-bold">{dbStatus.dbMode}</span>
+          </div>
+        )}
+      </div>
 
       {/* Action Cards */}
       <div className="grid md:grid-cols-3 gap-6">

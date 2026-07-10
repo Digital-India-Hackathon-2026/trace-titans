@@ -182,7 +182,12 @@ exports.searchMatches = async (req, res) => {
     }
 
     const matches = items.map(item => {
-      const itemTokens = tokenize(`${item.title} ${item.description} ${item.location} ${item.category}`);
+      const title = item.title || "";
+      const description = item.description || "";
+      const location = item.location || "";
+      const category = item.category || "";
+
+      const itemTokens = tokenize(`${title} ${description} ${location} ${category}`);
       const itemTokenSet = new Set(itemTokens);
 
       let matchCount = 0;
@@ -204,7 +209,7 @@ exports.searchMatches = async (req, res) => {
       
       // Boost score if categories are an exact match
       const queryLower = queryText.toLowerCase();
-      if (queryLower.includes(item.category.toLowerCase()) || item.category.toLowerCase().includes(queryLower)) {
+      if (category && (queryLower.includes(category.toLowerCase()) || category.toLowerCase().includes(queryLower))) {
         score += 15;
       }
 

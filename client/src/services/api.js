@@ -1,7 +1,10 @@
 import axios from "axios";
 
+// Dynamically determine the backend URL so that other devices on the same local network can connect
+const baseURL = import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}:5000/api`;
+
 const API = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL,
 });
 
 // Interceptor to attach JWT token to headers if it exists

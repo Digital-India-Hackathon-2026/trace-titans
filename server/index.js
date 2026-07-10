@@ -26,6 +26,15 @@ app.get("/", (req, res) => {
 app.use("/api", authRoutes);
 app.use("/api/items", itemRoutes);
 
+// Database Connection Status Route (Public)
+app.get("/api/db-status", (req, res) => {
+  res.json({
+    status: "running",
+    useInMemoryDB: global.useInMemoryDB === true,
+    dbMode: global.useInMemoryDB ? "In-Memory (Local Offline Mode)" : "MongoDB Atlas (Cloud Database)",
+  });
+});
+
 // Start Server
 const PORT = process.env.PORT || 5000;
 
