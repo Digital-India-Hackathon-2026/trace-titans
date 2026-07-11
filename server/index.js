@@ -7,6 +7,8 @@ const connectDB = require("./config/db");
 
 const authRoutes = require("./routes/authRoutes");
 const itemRoutes = require("./routes/itemRoutes");
+const claimRoutes = require("./routes/claimRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 const app = express();
 
@@ -25,6 +27,8 @@ app.get("/", (req, res) => {
 // API Routes
 app.use("/api", authRoutes);
 app.use("/api/items", itemRoutes);
+app.use("/api/claims", claimRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Database Connection Status Route (Public)
 app.get("/api/db-status", (req, res) => {

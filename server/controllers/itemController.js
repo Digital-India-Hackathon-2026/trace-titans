@@ -1,4 +1,5 @@
 const Item = require("../models/Item");
+const { saveDb } = require("../config/localDb");
 
 // Report Lost Item
 exports.reportLostItem = async (req, res) => {
@@ -14,6 +15,7 @@ exports.reportLostItem = async (req, res) => {
         updatedAt: new Date()
       };
       global.inMemoryItems.push(item);
+      saveDb();
       return res.status(201).json({
         message: "Lost item reported successfully (In-Memory)",
         item,
@@ -55,6 +57,7 @@ exports.reportFoundItem = async (req, res) => {
         updatedAt: new Date()
       };
       global.inMemoryItems.push(item);
+      saveDb();
       return res.status(201).json({
         message: "Found item reported successfully (In-Memory)",
         item,

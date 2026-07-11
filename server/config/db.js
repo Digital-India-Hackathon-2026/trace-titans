@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { loadDb } = require("./localDb");
 
 const connectDB = async () => {
   try {
@@ -16,8 +17,7 @@ const connectDB = async () => {
     console.warn(error.message);
     
     global.useInMemoryDB = true;
-    global.inMemoryUsers = [];
-    global.inMemoryItems = [];
+    loadDb();
   }
 };
 

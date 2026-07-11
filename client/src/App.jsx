@@ -9,6 +9,9 @@ import ReportLost from "./pages/ReportLost"
 import ReportFound from "./pages/ReportFound"
 import SearchItems from "./pages/SearchItems"
 import Matches from "./pages/Matches"
+import Notifications from "./pages/Notifications"
+import PendingClaims from "./pages/PendingClaims"
+import MyClaims from "./pages/MyClaims"
 
 function App() {
   return (
@@ -27,6 +30,9 @@ function App() {
           <Route path="/report-found" element={<ReportFound />} />
           <Route path="/search" element={<SearchItems />} />
           <Route path="/matches" element={<Matches />} />
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/pending-claims" element={<PendingClaims />} />
+          <Route path="/my-claims" element={<MyClaims />} />
         </Routes>
 
       </BrowserRouter>

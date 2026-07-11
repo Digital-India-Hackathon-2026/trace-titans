@@ -1,0 +1,173 @@
+{
+  "users": [
+    {
+      "_id": "1783727473423",
+      "name": "User Claimant",
+      "email": "claimant@example.com",
+      "password": "$2b$10$Cu7iY/QDu2zYnGULfUjeYOCDAlbTy2NY2ZOjkopYr/jGcJ2Gupjie"
+    },
+    {
+      "_id": "1783727473522",
+      "name": "User Finder",
+      "email": "finder@example.com",
+      "password": "$2b$10$V4OanYxVI5lTFEaXDK/dcenE671XaRZbYrUJys29zUC3w.0PZwUGe"
+    },
+    {
+      "_id": "1783727601775",
+      "name": "deepthi",
+      "email": "jdeepthi36@gmail.com",
+      "password": "$2b$10$utEmbsRZGSiEtWD7xYDL4uKhd99.xD3Tffo.9pXfktcuhy2mQeAWi"
+    },
+    {
+      "_id": "1783727696158",
+      "name": "sahithi",
+      "email": "sahithipalusa2007@gmail.com",
+      "password": "$2b$10$ofqnmJexR96C9JATBv8LHOT84uA3Qh8FGMkNbcdFjpYpoYo7iQGNi"
+    }
+  ],
+  "items": [
+    {
+      "_id": "1783727492027",
+      "title": "Claimant Black Wallet",
+      "description": "Leather wallet with ID card",
+      "category": "Accessories",
+      "location": "Main Library",
+      "date": "2026-07-10",
+      "status": "Lost",
+      "user": "1783727473423",
+      "createdAt": "2026-07-10T23:51:32.027Z",
+      "updatedAt": "2026-07-10T23:51:32.027Z"
+    },
+    {
+      "_id": "1783727492036",
+      "title": "Found Black Leather Wallet",
+      "description": "Black wallet found near study desks",
+      "category": "Accessories",
+      "location": "Library Second Floor",
+      "date": "2026-07-10",
+      "status": "Found",
+      "user": "1783727473522",
+      "createdAt": "2026-07-10T23:51:32.036Z",
+      "updatedAt": "2026-07-10T23:51:32.036Z"
+    },
+    {
+      "_id": "1783727640196",
+      "title": "phone",
+      "description": "iphone 17 orange color",
+      "category": "Electronics",
+      "location": "uppal metro",
+      "date": "2026-07-09",
+      "image": "",
+      "status": "Lost",
+      "user": "1783727601775",
+      "createdAt": "2026-07-10T23:54:00.196Z",
+      "updatedAt": "2026-07-10T23:54:00.196Z"
+    },
+    {
+      "_id": "1783727747533",
+      "title": "phone",
+      "description": "iphone 17",
+      "category": "Electronics",
+      "location": "uppal metro",
+      "date": "2026-07-09",
+      "image": "",
+      "status": "Found",
+      "user": "1783727696158",
+      "createdAt": "2026-07-10T23:55:47.533Z",
+      "updatedAt": "2026-07-10T23:55:47.533Z"
+    },
+    {
+      "_id": "1783730411260",
+      "title": "wallet",
+      "description": "black color wallet",
+      "category": "Accessories",
+      "location": "uppal",
+      "date": "2026-07-09",
+      "image": "",
+      "status": "Lost",
+      "user": "1783727601775",
+      "createdAt": "2026-07-11T00:40:11.261Z",
+      "updatedAt": "2026-07-11T00:40:11.261Z"
+    },
+    {
+      "_id": "1783730470651",
+      "title": "wallet",
+      "description": "black wallet",
+      "category": "Accessories",
+      "location": "uppal",
+      "date": "2026-07-10",
+      "image": "",
+      "status": "Found",
+      "user": "1783727696158",
+      "createdAt": "2026-07-11T00:41:10.651Z",
+      "updatedAt": "2026-07-11T00:41:10.651Z"
+    }
+  ],
+  "claims": [
+    {
+      "_id": "1783727492053",
+      "claimant": "1783727473423",
+      "finder": "1783727473522",
+      "lostItem": "1783727492027",
+      "foundItem": "1783727492036",
+      "status": "Accepted",
+      "createdAt": "2026-07-10T23:51:32.053Z",
+      "updatedAt": "2026-07-10T23:51:32.108Z"
+    },
+    {
+      "_id": "1783727794093",
+      "claimant": "1783727601775",
+      "finder": "1783727696158",
+      "lostItem": "1783727640196",
+      "foundItem": "1783727747533",
+      "status": "Accepted",
+      "createdAt": "2026-07-10T23:56:34.093Z",
+      "updatedAt": "2026-07-10T23:57:31.777Z"
+    },
+    {
+      "_id": "1783730515367",
+      "claimant": "1783727601775",
+      "finder": "1783727696158",
+      "lostItem": "1783730411260",
+      "foundItem": "1783730470651",
+      "status": "Accepted",
+      "createdAt": "2026-07-11T00:41:55.367Z",
+      "updatedAt": "2026-07-11T00:42:34.904Z"
+    }
+  ],
+  "notifications": [
+    {
+      "_id": "1783727492054",
+      "user": "1783727473522",
+      "title": "New Claim Request",
+      "message": "User Claimant believes the found Found Black Leather Wallet belongs to them.",
+      "type": "claim",
+      "claimId": "1783727492053",
+      "isRead": true,
+      "createdAt": "2026-07-10T23:51:32.053Z",
+      "updatedAt": "2026-07-10T23:51:32.108Z"
+    },
+    {
+      "_id": "1783727794094",
+      "user": "1783727696158",
+      "title": "New Claim Request",
+      "message": "deepthi believes the found phone belongs to them.",
+      "type": "claim",
+      "claimId": "1783727794093",
+      "isRead": true,
+      "createdAt": "2026-07-10T23:56:34.093Z",
+      "updatedAt": "2026-07-10T23:57:31.777Z"
+    },
+    {
+      "_id": "1783730515368",
+      "user": "1783727696158",
+      "title": "New Claim Request",
+      "message": "deepthi believes the found wallet belongs to them.",
+      "type": "claim",
+      "claimId": "1783730515367",
+      "isRead": true,
+      "createdAt": "2026-07-11T00:41:55.367Z",
+      "updatedAt": "2026-07-11T00:42:34.904Z"
+    }
+  ]
+}
