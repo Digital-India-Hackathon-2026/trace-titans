@@ -18,7 +18,6 @@ const notificationSchema = new mongoose.Schema(
     type: {
       type: String,
       default: "claim",
-      required: true,
     },
     claimId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -28,7 +27,6 @@ const notificationSchema = new mongoose.Schema(
     isRead: {
       type: Boolean,
       default: false,
-      required: true,
     },
   },
   {

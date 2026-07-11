@@ -9,10 +9,8 @@ function Matches() {
   const [matches, setMatches] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
-  const [userItems, setUserItems] = useState([])
-  const [showClaimConfirm, setShowClaimConfirm] = useState({})
-  const [selectedUserItem, setSelectedUserItem] = useState({})
-  const [claimStatus, setClaimStatus] = useState({})
+  const [claimed, setClaimed] = useState({})
+  const [claimError, setClaimError] = useState({})
 
   const { queryText, status } = location.state || {}
 
@@ -23,10 +21,27 @@ function Matches() {
       return
     }
 
-    const fetchMatches = async () => {
+    const fetchData = async () => {
       try {
-        const res = await API.post("/items/search-matches", { queryText, status })
-        setMatches(res.data)
+        const [matchesRes, claimsRes] = await Promise.all([
+          API.post("/items/search-matches", { queryText, status }),
+          API.get("/claims/my-sent").catch(() => ({ data: [] }))
+        ])
+        
+        setMatches(matchesRes.data)
+        
+        const claimedMap = {}
+        const sentClaims = claimsRes.data || []
+        
+        matchesRes.data.forEach((match, index) => {
+          const hasClaim = sentClaims.some(
+            c => (c.foundItem?._id === match._id || c.foundItem === match._id)
+          )
+          if (hasClaim) {
+            claimedMap[index] = "success"
+          }
+        })
+        setClaimed(claimedMap)
       } catch (err) {
         console.error("Match error:", err)
         setError("Failed to fetch matching reports from the server.")
@@ -35,70 +50,41 @@ function Matches() {
       }
     }
 
-    const fetchUserItems = async () => {
-      try {
-        const res = await API.get("/items")
-        setUserItems(res.data)
-      } catch (err) {
-        console.error("Failed to fetch user items:", err)
-      }
-    }
-
-    fetchMatches()
-    fetchUserItems()
+    fetchData()
   }, [queryText, status])
 
-  const getOppositeUserItems = (matchedItemStatus) => {
-    const targetStatus = matchedItemStatus === "Found" ? "Lost" : "Found"
-    return userItems.filter(i => i.status === targetStatus)
-  }
-
-  const handleContact = (index, matchedItemStatus) => {
-    const oppositeItems = getOppositeUserItems(matchedItemStatus)
-    if (oppositeItems.length > 0 && !selectedUserItem[index]) {
-      setSelectedUserItem(prev => ({
-        ...prev,
-        [index]: oppositeItems[0]._id
-      }))
-    }
-    setShowClaimConfirm(prev => ({
+  const handleContactClick = (index) => {
+    setClaimed(prev => ({
       ...prev,
-      [index]: true
+      [index]: "confirm"
     }))
   }
 
-  const handleInitiateClaim = async (index, matchedItem) => {
-    const matchedItemId = matchedItem._id
-    const userItemId = selectedUserItem[index]
-
-    if (!userItemId) {
-      setClaimStatus(prev => ({
-        ...prev,
-        [index]: { error: true, message: "Please select an item to claim with." }
-      }))
-      return
-    }
-
-    setClaimStatus(prev => ({
+  const handleClaimInitiated = async (index, foundItemId) => {
+    setClaimed(prev => ({
       ...prev,
-      [index]: { loading: true }
+      [index]: "submitting"
     }))
-
-    const isMatchedItemFound = matchedItem.status === "Found"
-    const lostItemId = isMatchedItemFound ? userItemId : matchedItemId
-    const foundItemId = isMatchedItemFound ? matchedItemId : userItemId
-
+    setClaimError(prev => ({
+      ...prev,
+      [index]: ""
+    }))
     try {
-      await API.post("/claims", { lostItemId, foundItemId })
-      setClaimStatus(prev => ({
+      await API.post("/claims", { foundItem: foundItemId })
+      setClaimed(prev => ({
         ...prev,
-        [index]: { success: true, message: "Claim request has been sent successfully." }
+        [index]: "success"
       }))
     } catch (err) {
       console.error("Claim error:", err)
-      setClaimStatus(prev => ({
+      const msg = err.response?.data?.message || "Failed to initiate claim request."
+      setClaimError(prev => ({
         ...prev,
-        [index]: { error: true, message: err.response?.data?.message || "Failed to initiate claim." }
+        [index]: msg
+      }))
+      setClaimed(prev => ({
+        ...prev,
+        [index]: "confirm"
       }))
     }
   }
@@ -167,127 +153,87 @@ function Matches() {
             {matches.map((match, index) => {
               const item = match
               const score = match.score
-              const oppositeItems = getOppositeUserItems(item.status)
-              const statusObj = claimStatus[index] || {}
-              const isClaimed = statusObj.success
-
               return (
                 <div
                   key={index}
-                  className="bg-white/10 rounded-xl p-5 border border-white/5 flex flex-col justify-between gap-6"
+                  className="bg-white/10 rounded-xl p-5 border border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-6"
                 >
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold flex items-center gap-2">
-                        {getItemEmoji(item.category, item.title)} {item.title}
-                      </h3>
-                      <p className="mt-2 text-gray-300 text-sm">
-                        {item.description}
-                      </p>
-                      <p className="mt-2 text-gray-400 text-sm">
-                        📍 Location: <span className="text-gray-200">{item.location}</span>
-                      </p>
-                      <p className="text-gray-400 text-sm">
-                        📅 Date: <span className="text-gray-200">{new Date(item.date).toLocaleDateString()}</span>
-                      </p>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold flex items-center gap-2">
+                      {getItemEmoji(item.category, item.title)} {item.title}
+                    </h3>
+                    <p className="mt-2 text-gray-300 text-sm">
+                      {item.description}
+                    </p>
+                    <p className="mt-2 text-gray-400 text-sm">
+                      📍 Location: <span className="text-gray-200">{item.location}</span>
+                    </p>
+                    <p className="text-gray-400 text-sm">
+                      📅 Date: <span className="text-gray-200">{new Date(item.date).toLocaleDateString()}</span>
+                    </p>
 
-                      <div className="mt-4 max-w-md">
-                        <div className="flex justify-between text-xs mb-1">
-                          <span className="text-gray-400">Match Confidence:</span>
-                          <span className="text-cyan-400 font-bold">{score}% Match</span>
-                        </div>
-                        <div className="w-full bg-gray-700 rounded-full h-2">
-                          <div 
-                            className="bg-cyan-400 h-2 rounded-full transition-all duration-500"
-                            style={{ width: `${score}%` }}
-                          ></div>
-                        </div>
+                    <div className="mt-4 max-w-md">
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-gray-400">Match Confidence:</span>
+                        <span className="text-cyan-400 font-bold">{score}% Match</span>
                       </div>
-                    </div>
-
-                    {item.image && (
-                      <div className="w-24 h-24 border border-white/15 rounded-lg overflow-hidden shrink-0">
-                        <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                      <div className="w-full bg-gray-700 rounded-full h-2">
+                        <div 
+                          className="bg-cyan-400 h-2 rounded-full transition-all duration-500"
+                          style={{ width: `${score}%` }}
+                        ></div>
                       </div>
-                    )}
-
-                    <div className="shrink-0">
-                      {!showClaimConfirm[index] ? (
-                        <button 
-                          onClick={() => handleContact(index, item.status)}
-                          className="px-5 py-2.5 rounded-lg font-bold bg-white text-black hover:scale-105 transition cursor-pointer"
-                        >
-                          Contact Finder
-                        </button>
-                      ) : (
-                        <button 
-                          onClick={() => handleInitiateClaim(index, item)}
-                          className={`px-5 py-2.5 rounded-lg font-bold transition flex items-center gap-2 cursor-pointer ${
-                            isClaimed 
-                              ? 'bg-green-500 text-white cursor-default hover:scale-100' 
-                              : 'bg-cyan-400 text-black hover:scale-105'
-                          }`}
-                          disabled={isClaimed || statusObj.loading}
-                        >
-                          {statusObj.loading ? (
-                            <Loader2 className="animate-spin" size={18} />
-                          ) : isClaimed ? (
-                            <>
-                              <Check size={18} />
-                              Claim Initiated
-                            </>
-                          ) : (
-                            "Claim Initiated"
-                          )}
-                        </button>
-                      )}
                     </div>
                   </div>
 
-                  {showClaimConfirm[index] && (
-                    <div className="mt-4 bg-slate-900/60 border border-white/5 rounded-xl p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
-                      <div className="flex-1 w-full">
-                        {oppositeItems.length === 0 ? (
-                          <div className="text-sm text-amber-400 flex items-center gap-2">
-                            <AlertTriangle size={16} />
-                            <span>
-                              You need to report a {item.status === "Found" ? "Lost" : "Found"} item first. 
-                              <button 
-                                onClick={() => navigate(item.status === "Found" ? "/report-lost" : "/report-found")} 
-                                className="text-cyan-400 font-bold ml-1 hover:underline cursor-pointer"
-                              >
-                                Report now
-                              </button>
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full">
-                            <span className="text-sm text-gray-400 font-medium shrink-0">
-                              Link to your {item.status === "Found" ? "lost" : "found"} report:
-                            </span>
-                            <select
-                              value={selectedUserItem[index] || ""}
-                              onChange={(e) => setSelectedUserItem(prev => ({ ...prev, [index]: e.target.value }))}
-                              disabled={isClaimed}
-                              className="bg-slate-950 border border-white/10 text-white rounded-lg p-2 outline-none w-full max-w-md text-sm cursor-pointer"
-                            >
-                              {oppositeItems.map(userItem => (
-                                <option key={userItem._id} value={userItem._id}>
-                                  {getItemEmoji(userItem.category, userItem.title)} {userItem.title} ({new Date(userItem.date).toLocaleDateString()})
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        )}
-                      </div>
-
-                      {statusObj.message && (
-                        <div className={`text-sm font-bold shrink-0 ${statusObj.error ? 'text-red-400' : 'text-green-400'}`}>
-                          {statusObj.message}
-                        </div>
-                      )}
+                  {item.image && (
+                    <div className="w-24 h-24 border border-white/15 rounded-lg overflow-hidden shrink-0">
+                      <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
                     </div>
                   )}
+
+                  <div className="shrink-0 flex flex-col items-end gap-1">
+                    {claimed[index] === "success" && (
+                      <button 
+                        className="px-5 py-2.5 rounded-lg font-bold transition flex items-center gap-2 bg-green-500 text-white cursor-not-allowed opacity-80"
+                        disabled
+                      >
+                        <Check size={18} />
+                        Claim Initiated
+                      </button>
+                    )}
+                    {claimed[index] === "submitting" && (
+                      <button 
+                        className="px-5 py-2.5 rounded-lg font-bold transition flex items-center gap-2 bg-cyan-400 text-black animate-pulse cursor-wait"
+                        disabled
+                      >
+                        <Loader2 className="animate-spin" size={18} />
+                        Submitting...
+                      </button>
+                    )}
+                    {claimed[index] === "confirm" && (
+                      <button 
+                        onClick={() => handleClaimInitiated(index, item._id)}
+                        className="px-5 py-2.5 rounded-lg font-bold transition flex items-center gap-2 bg-amber-500 text-black hover:bg-amber-400 hover:scale-105 animate-bounce"
+                      >
+                        Claim Initiated
+                      </button>
+                    )}
+                    {(!claimed[index] || (claimed[index] !== "success" && claimed[index] !== "submitting" && claimed[index] !== "confirm")) && (
+                      <button 
+                        onClick={() => handleContactClick(index)}
+                        className="px-5 py-2.5 rounded-lg font-bold transition flex items-center gap-2 bg-white text-black hover:scale-105"
+                      >
+                        Contact Finder
+                      </button>
+                    )}
+                    {claimed[index] === "success" && (
+                      <span className="text-green-400 text-xs font-semibold mt-1">Claim request has been sent successfully.</span>
+                    )}
+                    {claimError[index] && (
+                      <span className="text-red-400 text-xs font-semibold mt-1 max-w-[200px] text-right">{claimError[index]}</span>
+                    )}
+                  </div>
                 </div>
               )
             })}

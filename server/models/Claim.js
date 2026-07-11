@@ -26,15 +26,11 @@ const claimSchema = new mongoose.Schema(
       type: String,
       enum: ["Pending", "Accepted", "Rejected"],
       default: "Pending",
-      required: true,
     },
   },
   {
-    timestamps: true, // This automatically handles createdAt and updatedAt
+    timestamps: true,
   }
 );
-
-// Prevent duplicate claims for the same lost & found item pair
-claimSchema.index({ lostItem: 1, foundItem: 1 }, { unique: true });
 
 module.exports = mongoose.model("Claim", claimSchema);

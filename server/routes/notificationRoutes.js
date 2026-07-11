@@ -1,16 +1,18 @@
 const express = require("express");
 const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware");
-
 const {
   getNotifications,
-  markAsRead,
-} = require("../controllers/notificationController");
+  readNotification,
+} = require("../controllers/claimController");
 
-// Get user notifications (Protected)
-router.get("/", authMiddleware, getNotifications);
+// Protect all notification routes using JWT middleware
+router.use(authMiddleware);
 
-// Mark notification as read (Protected)
-router.put("/:id/read", authMiddleware, markAsRead);
+// GET /api/notifications - Returns notifications for logged-in user ordered by newest first
+router.get("/", getNotifications);
+
+// PUT /api/notifications/:id/read - Marks notification as read
+router.put("/:id/read", readNotification);
 
 module.exports = router;

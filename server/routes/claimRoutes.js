@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware");
-
 const {
   createClaim,
   getMyReceivedClaims,
@@ -10,19 +9,22 @@ const {
   rejectClaim,
 } = require("../controllers/claimController");
 
-// Create claim (Protected)
-router.post("/", authMiddleware, createClaim);
+// Protect all claims routes using JWT middleware
+router.use(authMiddleware);
 
-// Get received claims (Protected)
-router.get("/my-received", authMiddleware, getMyReceivedClaims);
+// POST /api/claims - Create a new claim
+router.post("/", createClaim);
 
-// Get sent claims (Protected)
-router.get("/my-sent", authMiddleware, getMySentClaims);
+// GET /api/claims/my-received - Returns all claims where the logged-in user is the finder
+router.get("/my-received", getMyReceivedClaims);
 
-// Accept claim (Protected)
-router.put("/:id/accept", authMiddleware, acceptClaim);
+// GET /api/claims/my-sent - Returns all claims initiated by the logged-in user
+router.get("/my-sent", getMySentClaims);
 
-// Reject claim (Protected)
-router.put("/:id/reject", authMiddleware, rejectClaim);
+// PUT /api/claims/:id/accept - Updates claim status to Accepted and marks notification as read
+router.put("/:id/accept", acceptClaim);
+
+// PUT /api/claims/:id/reject - Updates claim status to Rejected and marks notification as read
+router.put("/:id/reject", rejectClaim);
 
 module.exports = router;
