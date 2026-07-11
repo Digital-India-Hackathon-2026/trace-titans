@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { saveDb } = require("../config/localDb");
 
 // Register User
 exports.register = async (req, res) => {
@@ -20,6 +21,7 @@ exports.register = async (req, res) => {
         password: hashedPassword
       };
       global.inMemoryUsers.push(user);
+      saveDb();
       return res.status(201).json({ message: "User registered successfully (In-Memory)" });
     }
 

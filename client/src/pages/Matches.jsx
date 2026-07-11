@@ -10,6 +10,7 @@ function Matches() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [claimed, setClaimed] = useState({})
+  const [claimError, setClaimError] = useState({})
 
   const { queryText, status } = location.state || {}
 
@@ -20,10 +21,27 @@ function Matches() {
       return
     }
 
-    const fetchMatches = async () => {
+    const fetchData = async () => {
       try {
-        const res = await API.post("/items/search-matches", { queryText, status })
-        setMatches(res.data)
+        const [matchesRes, claimsRes] = await Promise.all([
+          API.post("/items/search-matches", { queryText, status }),
+          API.get("/claims/my-sent").catch(() => ({ data: [] }))
+        ])
+        
+        setMatches(matchesRes.data)
+        
+        const claimedMap = {}
+        const sentClaims = claimsRes.data || []
+        
+        matchesRes.data.forEach((match, index) => {
+          const hasClaim = sentClaims.some(
+            c => (c.foundItem?._id === match._id || c.foundItem === match._id)
+          )
+          if (hasClaim) {
+            claimedMap[index] = "success"
+          }
+        })
+        setClaimed(claimedMap)
       } catch (err) {
         console.error("Match error:", err)
         setError("Failed to fetch matching reports from the server.")
@@ -32,14 +50,43 @@ function Matches() {
       }
     }
 
-    fetchMatches()
+    fetchData()
   }, [queryText, status])
 
-  const handleContact = (index) => {
+  const handleContactClick = (index) => {
     setClaimed(prev => ({
       ...prev,
-      [index]: true
+      [index]: "confirm"
     }))
+  }
+
+  const handleClaimInitiated = async (index, foundItemId) => {
+    setClaimed(prev => ({
+      ...prev,
+      [index]: "submitting"
+    }))
+    setClaimError(prev => ({
+      ...prev,
+      [index]: ""
+    }))
+    try {
+      await API.post("/claims", { foundItem: foundItemId })
+      setClaimed(prev => ({
+        ...prev,
+        [index]: "success"
+      }))
+    } catch (err) {
+      console.error("Claim error:", err)
+      const msg = err.response?.data?.message || "Failed to initiate claim request."
+      setClaimError(prev => ({
+        ...prev,
+        [index]: msg
+      }))
+      setClaimed(prev => ({
+        ...prev,
+        [index]: "confirm"
+      }))
+    }
   }
 
   const getItemEmoji = (category, title) => {
@@ -145,21 +192,47 @@ function Matches() {
                     </div>
                   )}
 
-                  <div className="shrink-0">
-                    <button 
-                      onClick={() => handleContact(index)}
-                      className={`px-5 py-2.5 rounded-lg font-bold transition flex items-center gap-2 ${claimed[index] ? 'bg-green-500 text-white' : 'bg-white text-black hover:scale-105'}`}
-                      disabled={claimed[index]}
-                    >
-                      {claimed[index] ? (
-                        <>
-                          <Check size={18} />
-                          Claim Initiated
-                        </>
-                      ) : (
-                        "Contact Finder"
-                      )}
-                    </button>
+                  <div className="shrink-0 flex flex-col items-end gap-1">
+                    {claimed[index] === "success" && (
+                      <button 
+                        className="px-5 py-2.5 rounded-lg font-bold transition flex items-center gap-2 bg-green-500 text-white cursor-not-allowed opacity-80"
+                        disabled
+                      >
+                        <Check size={18} />
+                        Claim Initiated
+                      </button>
+                    )}
+                    {claimed[index] === "submitting" && (
+                      <button 
+                        className="px-5 py-2.5 rounded-lg font-bold transition flex items-center gap-2 bg-cyan-400 text-black animate-pulse cursor-wait"
+                        disabled
+                      >
+                        <Loader2 className="animate-spin" size={18} />
+                        Submitting...
+                      </button>
+                    )}
+                    {claimed[index] === "confirm" && (
+                      <button 
+                        onClick={() => handleClaimInitiated(index, item._id)}
+                        className="px-5 py-2.5 rounded-lg font-bold transition flex items-center gap-2 bg-amber-500 text-black hover:bg-amber-400 hover:scale-105 animate-bounce"
+                      >
+                        Claim Initiated
+                      </button>
+                    )}
+                    {(!claimed[index] || (claimed[index] !== "success" && claimed[index] !== "submitting" && claimed[index] !== "confirm")) && (
+                      <button 
+                        onClick={() => handleContactClick(index)}
+                        className="px-5 py-2.5 rounded-lg font-bold transition flex items-center gap-2 bg-white text-black hover:scale-105"
+                      >
+                        Contact Finder
+                      </button>
+                    )}
+                    {claimed[index] === "success" && (
+                      <span className="text-green-400 text-xs font-semibold mt-1">Claim request has been sent successfully.</span>
+                    )}
+                    {claimError[index] && (
+                      <span className="text-red-400 text-xs font-semibold mt-1 max-w-[200px] text-right">{claimError[index]}</span>
+                    )}
                   </div>
                 </div>
               )
